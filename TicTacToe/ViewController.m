@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "WebViewController.h"
 
 @interface ViewController ()
 @property (strong, nonatomic) IBOutlet UILabel *whichPlayerLabel;
@@ -19,7 +20,16 @@
 @property (strong, nonatomic) IBOutlet UILabel *labelSeven;
 @property (strong, nonatomic) IBOutlet UILabel *labelEight;
 @property (strong, nonatomic) IBOutlet UILabel *labelNine;
-@property (strong, nonatomic) IBOutlet UILabel *playerLabel;
+@property (strong, nonatomic) NSArray *labelArray;
+@property CGPoint pointTap;
+@property (strong, nonatomic) IBOutlet UILabel *xLabel;
+@property CGPoint xOriginalPos;
+@property (strong, nonatomic) IBOutlet UILabel *yLabel;
+@property CGPoint yOriginalPos;
+@property CGPoint dragPoint;
+@property (nonatomic, strong) NSTimer *myTimer;
+@property (strong, nonatomic) IBOutlet UILabel *timeRemaining;
+
 
 @end
 
@@ -27,136 +37,138 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self initializePlayers];
     // Do any additional setup after loading the view, typically from a nib.
+
+    [self initializeGame];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+#pragma tap interactions
+- (IBAction)whenLabelTapped:(UITapGestureRecognizer *)tapGesture {
+    self.pointTap = [tapGesture locationInView:self.view];
+    [self setTapGameRules];
+    [self whoWon];
+   }
+
+-(void)setTapGameRules
+{
+    for (UILabel *label in self.labelArray){
+        if(CGRectContainsPoint(label.frame, self.pointTap)){
+            if(([[label text] isEqualToString:@"X"] || [[label text] isEqualToString:@"O"])){
+                //Check to see if there is something already there
+                label.text = label.text;
+            }
+            else{
+                //Empty square and select
+                label.text = self.whichPlayerLabel.text;
+                if ([label.text isEqualToString:@"X"]){
+                    label.textColor = [UIColor blueColor];
+                }
+                else{
+                    label.textColor = [UIColor redColor];
+                }
+                //Change player on successful change
+                [self togglePlayer];
+                [self.myTimer invalidate];
+                self.myTimer = nil;
+                [self startTimer];
+            }
+        }
+    }
 }
 
--(void)findLabelUsingPoint: (CGPoint)point{
-    if(CGRectContainsPoint(self.labelOne.frame, point)){
-        //NSLog(@"Label One");
-        self.labelOne.text = self.whichPlayerLabel.text;
+#pragma pan interactions
 
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelOne.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelOne.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelTwo.frame, point)){
-        //NSLog(@"Label Two");
+- (IBAction)panGesture:(UIPanGestureRecognizer *)panGesture {
+    CGPoint point = [panGesture locationInView:self.view];
 
-        self.labelTwo.text = self.whichPlayerLabel.text;
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelTwo.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelTwo.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelThree.frame, point)){
-        //NSLog(@"Label Three");
 
-        self.labelThree.text = self.whichPlayerLabel.text;
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelThree.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelThree.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelFour.frame, point)){
-        //NSLog(@"Label Four");
-
-        self.labelFour.text = self.whichPlayerLabel.text;
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelFour.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelFour.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelFive.frame, point)){
-        //NSLog(@"Label Five");
-
-        self.labelFive.text = self.whichPlayerLabel.text;
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelFive.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelFive.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelSix.frame, point)){
-        //NSLog(@"Label Six");
-
-        self.labelSix.text = self.whichPlayerLabel.text;
-
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelSix.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelSix.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelSeven.frame, point)){
-        //NSLog(@"Label Seven");
-
-        self.labelSeven.text = self.whichPlayerLabel.text;
-
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelSeven.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelSeven.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelEight.frame, point)){
-        //NSLog(@"Label Eight");
-
-        self.labelEight.text = self.whichPlayerLabel.text;
-
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelEight.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelEight.textColor = [UIColor redColor];
-        }
-    }
-    else if(CGRectContainsPoint(self.labelNine.frame, point)){
-        //NSLog(@"Label Nine");
-
-        self.labelNine.text = self.whichPlayerLabel.text;
-
-        if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
-            self.labelNine.textColor = [UIColor blueColor];
-        }
-        else{
-            self.labelNine.textColor = [UIColor redColor];
-        }
+    if([self.whichPlayerLabel.text isEqualToString:@"X"]){
+        self.xLabel.center = point;
+        self.dragPoint = point;
     }
     else{
-        return;
+        self.yLabel.center = point;
+        self.dragPoint = point;
     }
-}
 
-- (IBAction)onLabelTapped:(UITapGestureRecognizer *)tapGesture {
-    CGPoint point = [tapGesture locationInView:self.view];
-    [self findLabelUsingPoint:point];
-    [self switchPlayers];
+    if(panGesture.state == UIGestureRecognizerStateEnded){
+    for(UILabel *label in self.labelArray){
+        if(CGRectContainsPoint(label.frame, point)){
+            if(([[label text] isEqualToString:@"X"] || [[label text] isEqualToString:@"O"])){
+                //Check to see if there is something already there
+                label.text = label.text;
+                if(([[label text] isEqualToString:@"X"])){
+                    self.xLabel.center = self.xOriginalPos;
+                }
+                else{
+                    self.yLabel.center = self.yOriginalPos;
+                }
+            }
+            else{
+                //Empty square and select
+                label.text = self.whichPlayerLabel.text;
+                if ([label.text isEqualToString:@"X"]){
+                    label.textColor = [UIColor blueColor];
+                    self.xLabel.center = self.xOriginalPos;
+                }
+                else{
+                    label.textColor = [UIColor redColor];
+                    self.yLabel.center = self.yOriginalPos;
+                }
+                //Change player on successful change
+                [self togglePlayer];
+                [self.myTimer invalidate];
+                self.myTimer = nil;
+                [self startTimer];
+            }
+        }}
+
+
+    }
+
     [self whoWon];
 }
 
--(NSString *)initializePlayers{
-    return self.whichPlayerLabel.text = @"X";
+
+#pragma game logic
+-(NSString *)whoWon{
+    NSString *tempLabel = nil;
+
+    if(![self.labelFive isEqual:[NSNull null]])
+    {
+        tempLabel = self.labelFive.text;
+        //Evaluate winning combinations when Label 5 has been selected at any point
+        if(((([[self.labelOne text] isEqualToString: tempLabel]) &&([[self.labelNine text] isEqualToString: tempLabel])) || (([[self.labelTwo text] isEqualToString: tempLabel]) &&([[self.labelEight text] isEqualToString: tempLabel]))) || (([[self.labelThree text] isEqualToString: tempLabel]) &&([[self.labelSeven text] isEqualToString: tempLabel])) || (([[self.labelFour text] isEqualToString: tempLabel]) &&([[self.labelSix text] isEqualToString: tempLabel]))){
+            //Declare winner
+            [self alertWinner:tempLabel];
+            return tempLabel;
+        }
+    }
+    if(![self.labelOne isEqual:[NSNull null]])
+    {
+        tempLabel = self.labelOne.text;
+        //Evaluate winning combinations when Label 1 has been selected at any point
+        if((([[self.labelThree text] isEqualToString: tempLabel]) &&([[self.labelTwo text] isEqualToString: tempLabel])) || (([[self.labelFour text] isEqualToString: tempLabel]) &&([[self.labelSeven text] isEqualToString: tempLabel]))){
+            //Declare winner
+            [self alertWinner:tempLabel];
+            return tempLabel;
+        }
+    }
+    if(![self.labelNine isEqual:[NSNull null]])
+    {
+        tempLabel = self.labelNine.text;
+        //Evaluate winning combinations when Label 5 has been selected at any point
+        if((([[self.labelThree text] isEqualToString: tempLabel]) &&([[self.labelSix text] isEqualToString: tempLabel])) || (([[self.labelSeven text] isEqualToString: tempLabel]) &&([[self.labelEight text] isEqualToString: tempLabel]))){
+            //Declare winner
+            [self alertWinner:tempLabel];
+            return tempLabel;
+        }
+    }
+    return nil;
 }
 
--(void)switchPlayers{
+-(void)togglePlayer{
+    //Switches player
     if([[self.whichPlayerLabel text] isEqualToString:@"X"]){
         self.whichPlayerLabel.text = @"O";
     }
@@ -165,68 +177,63 @@
     }
 }
 
-- (NSString *)whoWon{
-    if ([[self.labelOne text] isEqualToString: @"X"] && [[self.labelTwo text] isEqualToString:@"X"] && [[self.labelThree text] isEqualToString:@"X"]){
-        NSLog(@"X WINS!");
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelOne text] isEqualToString: @"X"] && [[self.labelFour text] isEqualToString:@"X"] && [[self.labelSeven text] isEqualToString:@"X"]){
-        NSLog(@"X WINS!");
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelOne text] isEqualToString: @"X"] && [[self.labelFive text] isEqualToString:@"X"] && [[self.labelNine text] isEqualToString:@"X"]){
-        NSLog(@"X WINS!");
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelTwo text] isEqualToString: @"X"] && [[self.labelFive text] isEqualToString:@"X"] && [[self.labelEight text] isEqualToString:@"X"]){
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelThree text] isEqualToString: @"X"] && [[self.labelFive text] isEqualToString:@"X"] && [[self.labelSeven text] isEqualToString:@"X"]){
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelFour text] isEqualToString: @"X"] && [[self.labelFive text] isEqualToString:@"X"] && [[self.labelSix text] isEqualToString:@"X"]){
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else if([[self.labelSeven text] isEqualToString: @"X"] && [[self.labelEight text] isEqualToString:@"X"] && [[self.labelNine text] isEqualToString:@"X"]){
-        [self switchPlayers];
-        [self alertWinner];
-        return @"X";
-    }
-    else{
-        return @"O";
-    }
+-(void)startTimer{
+    self.myTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(togglePlayer) userInfo:nil repeats:YES];
+    //[self updateTimer: self.myTimer];
 }
 
-- (IBAction)alertWinner{
+
+
+-(void)resetTimer{
+    [self.myTimer invalidate];
+    self.myTimer = nil;
+}
+
+//-(void)updateTimer:(NSTimer *)timer{
+//    int i = 5;
+//    if(i >= 0){
+//        self.timeRemaining.text = [NSString stringWithFormat: @"Time Remaining: %i", i];
+//        i--;
+//        NSLog(@"Counting");
+//    }
+//}
+
+- (IBAction)alertWinner:(NSString *)winner {
     UIAlertView *alertView = [[UIAlertView alloc] init];
     alertView.delegate = self;
-    alertView.title = [NSString stringWithFormat:@"Player %@ Wins!", self.whichPlayerLabel.text];
+    alertView.title = [NSString stringWithFormat:@"Player %@ Wins!", winner];
     [alertView addButtonWithTitle:@"Start New Game"];
     [alertView show];
     [self resetGame];
 }
 
--(void)resetGame{
-    self.labelOne.text = @"";
-    self.labelTwo.text = @"";
-    self.labelThree.text = @"";
-    self.labelFour.text = @"";
-    self.labelFive.text = @"";
-    self.labelSix.text = @"";
-    self.labelSeven.text = @"";
-    self.labelEight.text = @"";
-    self.labelNine.text = @"";
+- (IBAction)alertNoWinner:(NSString *)winner {
+    UIAlertView *alertView = [[UIAlertView alloc] init];
+    alertView.delegate = self;
+    alertView.title = [NSString stringWithFormat:@"No one wins!"];
+    [alertView addButtonWithTitle:@"Start New Game"];
+    [alertView show];
+    [self resetGame];
 }
+
+-(void)initializeGame{
+    self.whichPlayerLabel.text = @"X";
+    self.labelArray = @[self.labelOne, self.labelTwo, self.labelThree, self.labelFour, self.labelFive, self.labelSix, self.labelSeven, self.labelEight, self.labelNine];
+    self.xOriginalPos = self.xLabel.center;
+    self.yOriginalPos = self.yLabel.center;
+    [self startTimer];
+}
+
+- (IBAction)resetGame:(id)sender {
+    [self resetGame];
+}
+
+-(void)resetGame{
+//Called from whoWon
+    [self initializeGame];
+    for (UILabel *label in self.labelArray){
+        label.text = nil;
+    }
+}
+
 @end
